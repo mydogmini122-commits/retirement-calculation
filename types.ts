@@ -5,15 +5,18 @@ export enum RiskProfile {
   AGGRESSIVE = '積極型'
 }
 
+export type Gender = '男' | '女';
+
 export interface UserInputs {
   currentAge: number;
+  gender: Gender;
   retirementAge: number;
   currentSavings: number;
-  monthlySavings: number; // New field: Monthly contribution
-  monthlyExpensesCurrent: number; // Current value of monthly expenses
-  inflationRate: number; // Percentage
-  investmentReturnRate: number; // Percentage (Pre-retirement)
-  postRetirementReturnRate: number; // Percentage (Post-retirement)
+  monthlySavings: number;
+  monthlyExpensesCurrent: number;
+  inflationRate: number;
+  investmentReturnRate: number;
+  postRetirementReturnRate: number;
   lifeExpectancy: number;
 }
 
@@ -23,7 +26,7 @@ export interface CalculationResult {
   gap: number;
   isAchievable: boolean;
   savingsAtRetirement: number;
-  additionalMonthlySavingsNeeded: number; // New field: Extra savings needed to close gap
+  additionalMonthlySavingsNeeded: number;
   yearsToFreedom: number;
   yearlyData: Array<{
     age: number;
@@ -34,28 +37,22 @@ export interface CalculationResult {
 
 export interface AssetAllocationItem {
   name: string;
-  value: number; // Percentage 0-100
+  value: number;
   color: string;
   description?: string;
-  
-  // Simple Version (For 12yo / Lazy Package)
   risk: string; 
   expectedReturn: string; 
-  
-  // Professional Version (For Adult Report)
-  riskDetail: string; // Detailed risk analysis (volatility, drawdown)
-  historicalPerformance: string; // Historical CAGR, stats
+  riskDetail: string;
+  historicalPerformance: string;
 }
 
 export interface AIAdviceResponse {
-  // Humorous / Simple Section
   summary: string;
   allocation: AssetAllocationItem[];
   actionableSteps: string[];
   riskAnalysis: string;
   passiveIncomeSuggestions: string[];
-  
-  // Professional / Adult Section
-  professionalAnalysis: string; // Detailed macro/micro analysis
-  professionalSuggestions: string[]; // Concrete, mature advice
+  // Fix: Added optional professional fields to support dual-persona analysis and avoid TS errors
+  professionalAnalysis?: string;
+  professionalSuggestions?: string[];
 }

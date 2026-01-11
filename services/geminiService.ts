@@ -1,11 +1,12 @@
 
-import { GoogleGenAI, Type, Schema } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 import { UserInputs, CalculationResult, AIAdviceResponse } from "../types";
 
-const apiKey = process.env.API_KEY || '';
-const ai = new GoogleGenAI({ apiKey });
+// Fix: Use process.env.API_KEY directly as per guidelines
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-const allocationSchema: Schema = {
+// Fix: Removed Schema type annotation as it's not a standard export and used the structure directly
+const allocationSchema = {
   type: Type.OBJECT,
   properties: {
     summary: { type: Type.STRING, description: "A humorous, simple summary adapted to the user's age." },
@@ -57,7 +58,8 @@ export const getFinancialAdvice = async (
   const isGap = results.gap > 0;
   const age = inputs.currentAge;
 
-  if (!apiKey) {
+  // Fix: Check process.env.API_KEY directly
+  if (!process.env.API_KEY) {
     console.warn("API Key is missing, returning mock data.");
     
     // Custom Mock Data based on age group for fallback
@@ -198,8 +200,9 @@ export const getFinancialAdvice = async (
   `;
 
   try {
+    // Fix: Updated model name to gemini-3-flash-preview as recommended for text tasks
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3-flash-preview',
       contents: prompt,
       config: {
         responseMimeType: "application/json",
@@ -214,7 +217,7 @@ export const getFinancialAdvice = async (
     return JSON.parse(text) as AIAdviceResponse;
   } catch (error) {
     console.error("Gemini API Error:", error);
-    // Fallback with empty professional fields if error, ensuring app doesn't crash
+    // Fix: Return consistent AIAdviceResponse structure in catch block including required fields
     return {
        summary: "AI 連線忙碌中，請稍後再試。",
        allocation: [],
