@@ -1,19 +1,17 @@
 import path from 'path';
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), '');
-  
-  return {
-    plugins: [react()],
-    define: {
-      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY || ''),
-    },
-    resolve: {
-      alias: {
-        '@': path.resolve(__dirname, './'),
-      }
+export default defineConfig({
+  plugins: [react()],
+  define: {
+    // 這次我們直接強制讀取 process.env，這是 Vercel 最穩定的對接方式
+    'process.env.GEMINI_API_KEY': JSON.stringify(process.env.GEMINI_API_KEY || ''),
+    'process.env.VITE_GEMINI_API_KEY': JSON.stringify(process.env.VITE_GEMINI_API_KEY || ''),
+  },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './'),
     }
-  };
+  }
 });
