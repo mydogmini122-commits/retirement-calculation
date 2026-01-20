@@ -1,9 +1,7 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
 import { UserInputs, CalculationResult, AIAdviceResponse } from "./types";
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
-
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 export const getFinancialAdvice = async (
   inputs: UserInputs,
   results: CalculationResult
