@@ -1,19 +1,22 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { UserInputs, CalculationResult, AIAdviceResponse } from "./types";
 
-// 修正 1：正確初始化，並確保讀取的是 GEMINI_API_KEY
-const genAI = new GoogleGenAI(apiKey); 
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+// 關鍵修正：必須先定義變數，後面的代碼才能使用
+const apiKey = process.env.GEMINI_API_KEY || (import.meta as any).env?.VITE_GEMINI_API_KEY || '';
+
+// 初始化 GoogleGenAI 實例
+const genAI = new GoogleGenAI(apiKey);
 
 export const getFinancialAdvice = async (
   inputs: UserInputs,
   results: CalculationResult
 ): Promise<AIAdviceResponse> => {
+  
+  // 獲取模型實例 (使用穩定版 1.5-flash)
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
   const age = inputs.currentAge;
   const gender = inputs.gender;
-
-  // 修正 2：初始化模型實例 (使用穩定版 gemini-1.5-flash)
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   let ageSpecificInstruction = "";
   if (age < 35) {
@@ -31,26 +34,23 @@ export const getFinancialAdvice = async (
     使用者財務數據：
     - 性別：${gender}
     - 目前年齡：${age} 歲
-    - 預計退休：${inputs.retirementAge} 歲
     - 目前資產：${inputs.currentSavings} TWD
     - 每月投資：${inputs.monthlySavings} TWD
     - 退休金缺口：${results.gap} TWD
 
     任務要求：
-    1. 毒舌博士診斷 (summary)：${ageSpecificInstruction} 根據缺口大小進行嘲諷。請結合性別特徵進行幽默發揮。
+    1. 毒舌博士診斷 (summary)：${ageSpecificInstruction}。
     2. 資產配置建議 (allocation)：提供 3-4 類資產。
-    3. 行動建議：提供 3 個建議與 3 個針對收入的建議。
+    3. 行動建議：提供實質建議。
 
     請務必以繁體中文輸出符合 Schema 的 JSON。
   `;
 
   try {
-    // 修正 3：使用正確的模型調用語法
     const result = await model.generateContent({
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
       generationConfig: {
         responseMimeType: "application/json",
-        // 這裡保留你原本的 responseSchema 設定...
       }
     });
 
