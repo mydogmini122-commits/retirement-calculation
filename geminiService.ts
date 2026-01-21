@@ -1,9 +1,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { UserInputs, CalculationResult, AIAdviceResponse } from "./types";
-
-// 修正 1：確保讀取的名稱是 GEMINI_API_KEY
-const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
-
+const apiKey = process.env.GEMINI_API_KEY || (import.meta as any).env?.VITE_GEMINI_API_KEY || '';
+const genAI = new GoogleGenAI({ apiKey });
 export const getFinancialAdvice = async (
   inputs: UserInputs,
   results: CalculationResult
