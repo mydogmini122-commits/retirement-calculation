@@ -1,17 +1,17 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { UserInputs, CalculationResult, AIAdviceResponse } from "./types";
 
-// 關鍵修正：必須先定義變數，後面的代碼才能使用
-const apiKey = process.env.GEMINI_API_KEY || (import.meta as any).env?.VITE_GEMINI_API_KEY || '';
+// 嘗試從所有可能的入口讀取鑰匙
+const apiKey = (window as any).__GEMINI_API_KEY__ || process.env.GEMINI_API_KEY || '';
 
-// 初始化 GoogleGenAI 實例
+// 確保 genAI 被正確初始化
 const genAI = new GoogleGenAI(apiKey);
 
 export const getFinancialAdvice = async (
   inputs: UserInputs,
   results: CalculationResult
 ): Promise<AIAdviceResponse> => {
-  
+
   // 獲取模型實例 (使用穩定版 1.5-flash)
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
