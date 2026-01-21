@@ -3,21 +3,17 @@ import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig(({ mode }) => {
-  // 載入 Vercel 後台設定的變數
+  // 關鍵修正：第三個參數傳空字串 ''，代表強制抓取所有環境變數，包含 Vercel 系統變數
   const env = loadEnv(mode, process.cwd(), '');
   
   return {
     plugins: [react()],
     define: {
-      // 同時寫入三個位置，不給 Vite 漏掉的機會
-      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY || ''),
-      'globalThis.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY || ''),
-      'import.meta.env.VITE_GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY || ''),
+      // 這次我們換一個更暴力的全域變數名稱
+      'window.__APP_GEMINI_KEY__': JSON.stringify(env.GEMINI_API_KEY || ''),
     },
     resolve: {
-      alias: {
-        '@': path.resolve(__dirname, './'),
-      }
+      alias: { '@': path.resolve(__dirname, './') }
     }
   };
 });
