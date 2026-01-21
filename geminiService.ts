@@ -1,18 +1,20 @@
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 import { UserInputs, CalculationResult, AIAdviceResponse } from "./types";
-
-// 嘗試從所有可能的入口讀取鑰匙
-const apiKey = (window as any).__GEMINI_API_KEY__ || process.env.GEMINI_API_KEY || '';
-
-// 確保 genAI 被正確初始化
-const genAI = new GoogleGenAI(apiKey);
 
 export const getFinancialAdvice = async (
   inputs: UserInputs,
   results: CalculationResult
 ): Promise<AIAdviceResponse> => {
+  
+  // 關鍵修正：從 globalThis 安全讀取注入的 Key，避免 process.env 導致的崩潰
+  const apiKey = (globalThis as any).__GEMINI_API_KEY__;
 
-  // 獲取模型實例 (使用穩定版 1.5-flash)
+  if (!apiKey) {
+    throw new Error("API Key 未能成功注入，請確認 Vercel 設定並重新部署");
+  }
+
+  // 初始化 GoogleGenAI 實例
+  const genAI = new GoogleGenAI(apiKey);
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   const age = inputs.currentAge;
@@ -30,20 +32,11 @@ export const getFinancialAdvice = async (
   const prompt = `
     角色定位：你是一位個性鮮明、說話毒舌但專業的財務顧問『毒舌博士』。
     語氣：尖銳、充滿諷刺、幽默、像是一個嘴巴很壞但說實話的專業損友。
-
     使用者財務數據：
-    - 性別：${gender}
-    - 目前年齡：${age} 歲
+    - 性別：${gender}，年齡：${age} 歲
     - 目前資產：${inputs.currentSavings} TWD
-    - 每月投資：${inputs.monthlySavings} TWD
     - 退休金缺口：${results.gap} TWD
-
-    任務要求：
-    1. 毒舌博士診斷 (summary)：${ageSpecificInstruction}。
-    2. 資產配置建議 (allocation)：提供 3-4 類資產。
-    3. 行動建議：提供實質建議。
-
-    請務必以繁體中文輸出符合 Schema 的 JSON。
+    任務要求：請以繁體中文輸出符合 Schema 的 JSON 格式。
   `;
 
   try {
