@@ -6,25 +6,19 @@ export const getFinancialAdvice = async (
   results: CalculationResult
 ): Promise<AIAdviceResponse> => {
   
-  // 核心修正：從三個入口嘗試抓取鑰匙，直到抓到為止
-  const apiKey = (globalThis as any).__GEMINI_API_KEY__ || 
+  // 核心修正：嘗試所有可能的注入位置
+  const apiKey = (globalThis as any).GEMINI_API_KEY || 
                  process.env.GEMINI_API_KEY || 
                  (import.meta as any).env?.VITE_GEMINI_API_KEY;
 
-  if (!apiKey) {
-    throw new Error("API Key 還是讀不到，請確認 Vercel 後台 Production 勾選了沒？");
+  if (!apiKey || apiKey.length < 10) {
+    throw new Error("偵測到 API Key 為空。請確認 Vercel 後台 Production 是否勾選並關閉 Build Cache 重新部署。");
   }
 
   const genAI = new GoogleGenAI(apiKey);
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-  const age = inputs.currentAge;
-  const gender = inputs.gender;
-
-  // ... 這裡保留你的毒舌邏輯 (ageSpecificInstruction) ...
-  let ageSpecificInstruction = age < 35 ? "攻擊精緻窮" : "嘲諷社畜"; 
-
-  const prompt = `你是一位毒舌財務顧問。使用者目前資產 ${inputs.currentSavings} TWD。請以繁體中文輸出符合 Schema 的 JSON。`;
+  const prompt = `你是一位毒舌財務顧問。使用者目前資產 ${inputs.currentSavings} TWD，退休金缺口 ${results.gap} TWD。請以繁體中文輸出符合 Schema 的 JSON。`;
 
   try {
     const result = await model.generateContent({
@@ -33,6 +27,7 @@ export const getFinancialAdvice = async (
     });
 
     const text = result.response.text();
+    if (!text) throw new Error("API 沒有回傳內容");
     return JSON.parse(text) as AIAdviceResponse;
   } catch (error) {
     console.error("Gemini API Error:", error);
