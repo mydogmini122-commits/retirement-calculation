@@ -3,14 +3,15 @@ import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig(({ mode }) => {
-  // 載入環境變數 (第3個參數為空字串代表載入所有變數)
+  // 載入 Vercel 設定的環境變數
   const env = loadEnv(mode, process.cwd(), '');
   
   return {
     plugins: [react()],
     define: {
-      // 多重注入：確保不管是 process.env 或 window 都能讀到 Key
+      // 關鍵修正：將變數同時注入到三個可能的地方
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY || ''),
+      'import.meta.env.VITE_GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY || ''),
       'globalThis.__GEMINI_API_KEY__': JSON.stringify(env.GEMINI_API_KEY || ''),
     },
     resolve: {
